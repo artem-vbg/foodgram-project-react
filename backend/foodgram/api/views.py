@@ -1,23 +1,23 @@
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingList, Tag)
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from users.models import CustomUser, Follow
 
-from .filters import RecipeFilterSet
+from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
+                            ShoppingCart, Tag)
+from .filters import IngredientSearchFilter, RecipeFilterSet
+from users.models import CustomUser, Follow
 from .permissions import IsAdmin, IsAuthorOrAdmin, IsSuperuser
 from .serializers import (FavoriteCreateSerializer, FavoriteSerializer,
                           FollowCreateSerializer, FollowSerializer,
                           IngredientSerializer, ListRecipeSerializer,
-                          RecipeSerializer, ShoppingListCreateSerializer,
-                          ShoppingListSerializer, TagSerializer,
+                          RecipeSerializer, ShoppingCartCreateSerializer,
+                          ShoppingCartSerializer, TagSerializer,
                           UserSerializer)
-from .utils import download_file_response
+from .utils import DataMixin, download_file_response
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -54,57 +54,36 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filter_class = RecipeFilterSet
 
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PUT', 'PATCH'):
+            return RecipeSerializer
+        return ListRecipeSerializer
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({"user_id": self.request.user.id})
+        context.update({"user_id": self.request.user})
         return context
 
     @action(
         detail=False,
         permission_classes=(permissions.IsAuthenticated,),
         methods=['get', ])
-    def download_shopping_list(self, request):
+    def download_shopping_cart(self, request):
         user = request.user
-        recipes_id = ShoppingList.objects.filter(owner=user).values('item')
-        ingredients_id = Recipe.objects.filter(
-            id__in=recipes_id
-                ).values('ingredients')
-        ingredients = Ingredient.objects.filter(id__in=ingredients_id)
+        ingredients = IngredientAmount.objects.filter(
+            recipe__shopping_cart__owner=user).values(
+            'ingredient__name', 'ingredient__measurement_unit').order_by(
+                'ingredient__name').annotate(ingredient_total=Sum('amount'))
 
         lines = []
 
         for ingredient in ingredients:
-            amount = IngredientAmount.objects.filter(
-                ingredient=ingredient,
-                recipe__in=recipes_id
-                ).aggregate(total_amount=Sum('amount'))["total_amount"]
-
             lines.append(
-                f'{ingredient.name} ({ingredient.measurement_unit})' +
-                f' – {str(amount)}'
+                f'{ingredient["ingredient__name"]}' +
+                f' – {ingredient["ingredient_total"]}' +
+                f'{ingredient["ingredient__measurement_unit"]}.\n'
                 )
-
         return download_file_response(lines, 'shop_list.txt')
-
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        data['tags'] = [{'id': idx} for idx in data['tags']]
-        serializer = RecipeSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(author=self.request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def update(self, request, pk, *args, **kwargs):
-        kwargs['partial'] = True
-        instance = self.get_object()
-        instance.id = pk
-        instance.save()
-        data = request.data.copy()
-        data['tags'] = [{'id': idx} for idx in data['tags']]
-        serializer = RecipeSerializer(instance, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(author=self.request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -112,6 +91,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     pagination_class = None
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filterset_class = IngredientSearchFilter
+    search_fields = ('^name',)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -121,72 +102,42 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
 
 
-class ShoppingListViewSet(views.APIView):
+class ShoppingCartViewSet(DataMixin, views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = TagSerializer
     pagination_class = None
 
-    def get(self, request, recipe_id):
-        item = get_object_or_404(Recipe, pk=recipe_id)
-        owner = self.request.user
-        serializer = ShoppingListCreateSerializer(
-            data={'item': recipe_id, 'owner': owner.id}
-            )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(owner=self.request.user)
-        shopcart = get_object_or_404(ShoppingList, item=item, owner=owner)
-        serializer = ShoppingListSerializer(shopcart)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def post(self, request, recipe_id):
+        return self.add_to_universal_method(
+            ShoppingCart, ShoppingCartCreateSerializer,
+            ShoppingCartSerializer, recipe_id)
 
     def delete(self, request, recipe_id):
-        user = request.user
-        item = get_object_or_404(Recipe, pk=recipe_id)
-        follow = get_object_or_404(ShoppingList, item=item, owner=user)
-        follow.delete()
-        return Response(
-            'Удаление прошло успешно!', status=status.HTTP_204_NO_CONTENT
-        )
+        return self.del_from_universal_method(
+            ShoppingCart, recipe_id)
 
 
-class FavoriteViewSet(views.APIView):
+class FavoriteViewSet(DataMixin, views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = FavoriteSerializer
     pagination_class = None
-
-    def get(self, request, recipe_id):
-        fav_item = get_object_or_404(Recipe, pk=recipe_id)
-        fav_user = self.request.user
-        serializer = FavoriteCreateSerializer(
-            data={'fav_item': recipe_id, 'fav_user': fav_user.id}
-            )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(fav_user=self.request.user)
-        shopcart = get_object_or_404(
-            Favorite,
-            fav_item=fav_item,
-            fav_user=fav_user
-            )
-        serializer = FavoriteSerializer(shopcart)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
+    def post(self, request, recipe_id):
+        return self.add_to_universal_method(
+            Favorite, FavoriteCreateSerializer,
+            FavoriteSerializer, recipe_id)
 
     def delete(self, request, recipe_id):
-        fav_user = request.user
-        fav_item = get_object_or_404(Recipe, pk=recipe_id)
-        follow = get_object_or_404(
-            Favorite,
-            fav_item=fav_item,
-            fav_user=fav_user
-            )
-        follow.delete()
-        return Response(
-            'Удаление прошло успешно!', status=status.HTTP_204_NO_CONTENT
-        )
+        return self.del_from_universal_method(
+            Favorite, recipe_id)
 
 
 class SubscribeView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
+    
 
-    def get(self, request, user_id):
+    def post(self, request, user_id):
         user = self.request.user
         author = get_object_or_404(CustomUser, id=user_id)
         serializer = FollowCreateSerializer(

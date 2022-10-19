@@ -1,6 +1,8 @@
 import django_filters
-from django_filters import rest_framework
-from recipes.models import Favorite, Recipe, ShoppingList, Tag
+from django_filters import FilterSet, filters, rest_framework
+
+from recipes.models import (Favorite, Ingredient, Recipe,
+                            ShoppingCart, Tag)
 
 
 class RecipeFilterSet(rest_framework.FilterSet):
@@ -16,9 +18,9 @@ class RecipeFilterSet(rest_framework.FilterSet):
         method='filter_is_favorited',
     )
 
-    is_in_shopping_list = django_filters.BooleanFilter(
-        field_name='is_in_shopping_list',
-        method='filter_is_in_shopping_list',
+    is_in_shopping_cart = django_filters.BooleanFilter(
+        field_name='is_in_shopping_cart',
+        method='filter_is_in_shopping_cart',
     )
 
     class Meta:
@@ -27,10 +29,18 @@ class RecipeFilterSet(rest_framework.FilterSet):
 
     def filter_is_favorited(self, queryset, name, tags):
         user = self.request.user
-        fav_recipes = Favorite.objects.filter(fav_user=user).values('fav_item')
+        fav_recipes = Favorite.objects.filter(user=user).values('recipe')
         return queryset.filter(id__in=fav_recipes)
 
-    def filter_is_in_shopping_list(self, queryset, name, tags):
+    def filter_is_in_shopping_cart(self, queryset, name, tags):
         user = self.request.user
-        recipes = ShoppingList.objects.filter(owner=user).values('item')
+        recipes = ShoppingCart.objects.filter(user=user).values('recipe')
         return queryset.filter(id__in=recipes)
+
+
+class IngredientSearchFilter(FilterSet):
+    name = filters.CharFilter(lookup_expr='istartswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name', )

@@ -48,6 +48,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
+        null=True,
         related_name='recipes',
         verbose_name='Автор',
     )
@@ -57,6 +58,7 @@ class Recipe(models.Model):
         help_text='Добавьте название рецепта'
     )
     image = models.ImageField(
+        null=True,
         upload_to='image/',
         verbose_name='Изображение',
     )
@@ -101,11 +103,13 @@ class Recipe(models.Model):
 class IngredientAmount(models.Model):
     recipe = models.ForeignKey(
         Recipe,
+        related_name='recipes_ingredients_list',
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
+        related_name='recipes_ingredients_list',
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
@@ -151,16 +155,18 @@ class TagRecipe(models.Model):
         return f'{self.tag.name}'
 
 
-class ShoppingList(models.Model):
-    owner = models.ForeignKey(
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
+        related_name='shopping_cart',
         verbose_name='Покупатель'
     )
-    item = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         blank=True,
+        related_name='shopping_cart',
         verbose_name='Товар'
         )
 
@@ -169,21 +175,21 @@ class ShoppingList(models.Model):
         verbose_name = 'Список покупок',
         verbose_name_plural = 'Списки покупок'
         constraints = [models.UniqueConstraint(
-            fields=['owner', 'item'],
+            fields=['user', 'recipe'],
             name='list_item_unique'
         )]
 
     def __str__(self):
-        return f'{self.owner.username} - {self.item.name}'
+        return f'{self.user.username} - {self.recipe.name}'
 
 
 class Favorite(models.Model):
-    fav_user = models.ForeignKey(
+    user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         verbose_name='Пользователь'
     )
-    fav_item = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         blank=True,
@@ -195,10 +201,10 @@ class Favorite(models.Model):
         verbose_name = 'Избранное',
         verbose_name_plural = 'Избранные'
         constraints = [models.UniqueConstraint(
-            fields=['fav_user', 'fav_item'],
+            fields=['user', 'recipe'],
             name='favorite_recipe_unique'
         )]
 
     def __str__(self):
-        return (f'{self.fav_user.username} ' +
-               f'добавил в избранное {self.fav_item.name}')
+        return (f'{self.user.username} ' +
+               f'добавил в избранное {self.recipe.name}')
