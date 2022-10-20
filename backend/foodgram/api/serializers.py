@@ -131,12 +131,11 @@ class RecipeSerializer(serializers.ModelSerializer):
                     'Количество ингридиентов должно быть положительным'
                 )
             check_id = ingredient['ingredient']['id']
-            ingredient_check = Ingredient.objects.filter(id=check_id)
-            if ingredient_check in ingredients_list:
+            if check_id in ingredients_list:
                 raise serializers.ValidationError(
                     'Ингредиенты в рецепте дублируются'
                 )
-            ingredients_list.append(ingredient_check)
+            ingredients_list.append(check_id)
         return data
 
     def validate_cooking_time(self, data):
@@ -189,7 +188,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.ingredients.clear()
         self.create_recipe_ingredient_and_tag(
             ingredients=ingredients, tags=tags, recipe=instance)
-        instance.save()
         return instance
 
     def to_representation(self, instance):
