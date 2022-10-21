@@ -1,10 +1,10 @@
 import django_filters
-from django_filters import FilterSet, filters, rest_framework
-from recipes.models import (Ingredient, Favorite, Recipe,
-                            ShoppingCart, Tag)
+from django_filters.rest_framework import FilterSet, filters
+from recipes.models import Ingredient, Favorite, Recipe
+from recipes.models import ShoppingCart, Tag
 
 
-class RecipeFilterSet(rest_framework.FilterSet):
+class RecipeFilterSet(FilterSet):
 
     tags = django_filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',

@@ -168,7 +168,7 @@ class ShoppingCart(models.Model):
         blank=True,
         related_name='shopping_cart',
         verbose_name='Товар'
-        )
+    )
 
     class Meta:
         ordering = ['id']
@@ -194,7 +194,7 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
         blank=True,
         verbose_name='Рецепт в избранном'
-        )
+    )
 
     class Meta:
         ordering = ['id']
