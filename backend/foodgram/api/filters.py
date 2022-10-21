@@ -1,6 +1,6 @@
-import django_filters
 from recipes.models import (Ingredient, Favorite, Recipe,
                             ShoppingCart, Tag)
+import django_filters
 from django_filters.rest_framework import FilterSet, filters
 
 
