@@ -1,7 +1,6 @@
 import django_filters
 from django_filters import FilterSet, filters, rest_framework
-
-from recipes.models import (Favorite, Ingredient, Recipe,
+from recipes.models import (Ingredient, Favorite, Recipe,
                             ShoppingCart, Tag)
 
 
@@ -11,7 +10,7 @@ class RecipeFilterSet(rest_framework.FilterSet):
         field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all()
-        )
+    )
 
     is_favorited = django_filters.BooleanFilter(
         field_name='is_favorited',

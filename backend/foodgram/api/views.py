@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
+from recipes.models import (Ingredient, IngredientAmount, Favorite, Recipe,
                             ShoppingCart, Tag)
 from .filters import IngredientSearchFilter, RecipeFilterSet
 from users.models import CustomUser, Follow
@@ -79,10 +79,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         for ingredient in ingredients:
             lines.append(
-                f'{ingredient["ingredient__name"]}' +
-                f' – {ingredient["ingredient_total"]}' +
-                f'{ingredient["ingredient__measurement_unit"]}.\n'
-                )
+                f'{ingredient["ingredient__name"]}'
+                + f' – {ingredient["ingredient_total"]}'
+                + f'{ingredient["ingredient__measurement_unit"]}.\n'
+            )
         return download_file_response(lines, 'shop_list.txt')
 
 
@@ -121,8 +121,7 @@ class FavoriteViewSet(DataMixin, views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = FavoriteSerializer
     pagination_class = None
-    
-    
+
     def post(self, request, recipe_id):
         return self.add_to_universal_method(
             Favorite, FavoriteCreateSerializer,
@@ -135,21 +134,20 @@ class FavoriteViewSet(DataMixin, views.APIView):
 
 class SubscribeView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    
 
     def post(self, request, user_id):
         user = self.request.user
         author = get_object_or_404(CustomUser, id=user_id)
         serializer = FollowCreateSerializer(
             data={'user': user.id, 'author': user_id}
-            )
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save(user=self.request.user)
         follow = get_object_or_404(
             Follow,
             user=user,
             author=author
-            )
+        )
         serializer = FollowSerializer(follow)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

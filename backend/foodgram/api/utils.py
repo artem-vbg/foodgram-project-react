@@ -2,7 +2,6 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
 from rest_framework.response import Response
-
 from recipes.models import Recipe
 
 
@@ -14,8 +13,8 @@ def download_file_response(list_to_download, filename):
 
 class DataMixin:
 
-    def add_to_universal_method(self,
-        model, serializer_crtd_cls, serializer_cls, recipe_id):
+    def add_to_universal_method(self, model, serializer_crtd_cls,
+                                serializer_cls, recipe_id):
         value = get_object_or_404(Recipe, pk=recipe_id)
         user = self.request.user
         serializer = serializer_crtd_cls(
@@ -26,19 +25,18 @@ class DataMixin:
             model,
             recipe=value,
             user=user,
-            )
+        )
         serializer = serializer_cls(obj_data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def del_from_universal_method(self,
-        model, recipe_id):
+    def del_from_universal_method(self, model, recipe_id):
         user = self.request.user
         value = get_object_or_404(Recipe, pk=recipe_id)
         obj_data = get_object_or_404(
             model,
             recipe=value,
             user=user
-            )
+        )
         obj_data.delete()
         return Response(
             'Удаление прошло успешно!', status=status.HTTP_204_NO_CONTENT
@@ -47,12 +45,11 @@ class DataMixin:
 
 class DataSerializerMixin:
 
-    def create_serializer(
-        self, model, serializer_cls, validated_data):
+    def create_serializer(self, model, serializer_cls, validated_data):
         recipe = get_object_or_404(
             model,
             pk=validated_data.get('recipe').get('id')
-            )
+        )
         user = validated_data.get('user')
         return serializer_cls.objects.create(recipe=recipe, user=user)
 
@@ -62,5 +59,5 @@ class DataSerializerMixin:
                 user__id=data.get('user').get('id')).exists():
             raise serializers.ValidationError(
                 'Рецепт уже добавлен'
-                )
+            )
         return data
