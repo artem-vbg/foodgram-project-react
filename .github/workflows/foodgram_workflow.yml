@@ -88,7 +88,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            docker-compose up --remove-orphans
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:v2
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fronted:v1
             sudo docker-compose stop
