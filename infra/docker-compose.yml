@@ -6,11 +6,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../backend/foodgram/.env
+      - ./.env
     restart: always
   
   backend:
-    image: artemhub/foodgram:latest
+    image: artemhub/foodgram:v2
     restart: always
     volumes:
       - static_value:/app/static/
@@ -18,10 +18,10 @@ services:
     depends_on:
       - db
     env_file:
-      - ../backend/foodgram/.env
+      - ./.env
 
   frontend:
-    image: artemhub/foodgram:latest
+    image: artemhub/fronted:v1
     volumes:
       - ../frontend/:/app/result_build/
 

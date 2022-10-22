@@ -48,7 +48,7 @@ jobs:
         with:
           context: ./backend/foodgram
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:v2
 
   build_and_push_frontend_to_docker_hub:
     name: Push frontend image to Docker Hub
@@ -70,7 +70,7 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/fronted:v1
 
   deploy:
     name: Deploy on remote server
@@ -89,9 +89,10 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fronted:latest
             sudo docker-compose stop
             sudo docker-compose rm backend
-            touch ../backend/foodgram/.env
+            touch .env
             sudo echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             sudo echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             sudo echo DB_NAME=${{ secrets.DB_NAME }} >> .env
