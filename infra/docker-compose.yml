@@ -26,9 +26,9 @@ services:
       - ../frontend/:/app/result_build/
 
   nginx:
-    image: nginx:1.19.3
+    image: nginx:1.21.3
     ports:
-      - "8080:8080"
+      - "8080:80"
     volumes:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
