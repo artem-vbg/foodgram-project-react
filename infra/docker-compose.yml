@@ -6,7 +6,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ./backend/foodgram/.env
     restart: always
   
   backend:
@@ -18,7 +18,7 @@ services:
     depends_on:
       - db
     env_file:
-      - ./.env
+      - ./backend/foodgram/.env
 
   frontend:
     image: artemhub/fronted:v1
