@@ -92,7 +92,6 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fronted:v1
             sudo docker-compose stop
             sudo docker-compose rm backend
-            sudo docker-compose rm frontend
             touch .env
             sudo echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             sudo echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
