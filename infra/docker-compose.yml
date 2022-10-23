@@ -29,7 +29,7 @@ services:
   nginx:
     image: nginx:1.21.3
     ports:
-      - '80:80'
+      - '8080:80'
     volumes:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
