@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=dotenv_path)
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django.db.backends.postgresql')
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
