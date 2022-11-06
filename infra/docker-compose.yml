@@ -23,7 +23,7 @@ services:
       - ./.env
 
   frontend:
-    image: artemhub/fronted:v1e
+    image: artemhub/fronted:v1
     volumes:
       - ../frontend/:/app/result_build/
 
