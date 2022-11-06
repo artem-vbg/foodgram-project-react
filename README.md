@@ -2,7 +2,11 @@
 
 [![foodgram_workflow](https://github.com/artem-vbg/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/artem-vbg/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
 
-# Проект запущен и доступен по адресу [http://51.250.104.214/recipes].
+## Проект запущен и доступен по адресу [http://51.250.104.214/].
+## Админка доступна по адресу [http://51.250.104.214/admin/].
+
+## Email: james_bond@mail.ru
+## Passsword: rbiBa_me4
 
 ## Стек: 
 Python 3, Django 3, Django REST Framework, Docker, PostgreSQL, Simple-JWT, GIT.
@@ -103,10 +107,6 @@ Cайт Foodgram - онлайн-сервис, на котором пользов
 Остановить все запущенные контейнеры:
 
   `docker-compose down`
-
-Админка доступна по адресу [http://51.250.104.214/admin/].
-Email: james_bond@mail.ru
-Passsword: rbiBa_me4
 
 
 Также настроен workflow для автоматического разворачивания на сервере.
