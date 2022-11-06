@@ -2,7 +2,7 @@
 
 [![foodgram_workflow](https://github.com/artem-vbg/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/artem-vbg/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
 
-# Проект запущен и доступен по адресу [http://51.250.104.214:80].
+# Проект запущен и доступен по адресу [http://51.250.104.214].
 
 ## Стек: 
 Python 3, Django 3, Django REST Framework, Docker, PostgreSQL, Simple-JWT, GIT.
@@ -62,7 +62,6 @@ Cайт Foodgram - онлайн-сервис, на котором пользов
 - Ресурс subscriptions: возвращает пользователей, на которых подписан текущий пользователь. В выдачу добавляются рецепты.
 - Ресурс ingredients: получение данных ингредиента или списка ингредиентов.
 
-Документация к API доступна по адресу http://51.250.104.214:80/api/docs/
 
 ## Установка:
 Для работы приложения требуется установка на ваш компьютер [Python](https://www.python.org/downloads/), [Docker](https://hub.docker.com/editions/community/docker-ce-desktop-windows), [PostgreSQL](https://postgrespro.ru/windows).
@@ -92,7 +91,6 @@ Cайт Foodgram - онлайн-сервис, на котором пользов
 
   `docker-compose exec backend python manage.py collectstatic --no-input`
   
-Проект запущен и доступен по адресу [http://51.250.104.214:80].
 
 Создаем суперпользователя:
 
@@ -106,7 +104,7 @@ Cайт Foodgram - онлайн-сервис, на котором пользов
 
   `docker-compose down`
 
-Админка доступна по адресу [http://51.250.104.214:80/admin/].
+Админка доступна по адресу [http://51.250.104.214/admin/].
 Email: james_bond@mail.ru
 Passsword: rbiBa_me4
 
