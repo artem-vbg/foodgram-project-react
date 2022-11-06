@@ -2,7 +2,7 @@
 
 [![foodgram_workflow](https://github.com/artem-vbg/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/artem-vbg/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
 
-# Проект запущен и доступен по адресу [http://51.250.104.214].
+# Проект запущен и доступен по адресу [http://51.250.104.214/recipes].
 
 ## Стек: 
 Python 3, Django 3, Django REST Framework, Docker, PostgreSQL, Simple-JWT, GIT.
