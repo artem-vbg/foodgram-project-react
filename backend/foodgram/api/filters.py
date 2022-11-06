@@ -1,4 +1,5 @@
 import django_filters
+from django_filters.rest_framework.filters import BooleanFilter
 from django_filters import FilterSet, filters, rest_framework
 from recipes.models import (Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
@@ -12,12 +13,12 @@ class RecipeFilterSet(rest_framework.FilterSet):
         queryset=Tag.objects.all()
     )
 
-    is_favorited = django_filters.BooleanFilter(
+    is_favorited = BooleanFilter(
         field_name='is_favorited',
         method='filter_is_favorited',
     )
 
-    is_in_shopping_cart = django_filters.BooleanFilter(
+    is_in_shopping_cart = BooleanFilter(
         field_name='is_in_shopping_cart',
         method='filter_is_in_shopping_cart',
     )

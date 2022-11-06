@@ -68,7 +68,7 @@ class ListRecipeSerializer(serializers.ModelSerializer):
         source='recipes_ingredients_list',
         many=True,
     )
-    image = Base64ImageField()
+    image = Base64ImageField(max_length=None, use_url=True,)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -88,7 +88,7 @@ class ListRecipeSerializer(serializers.ModelSerializer):
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get("user_id")
+        user = self.context.get('user_id')
         recipe = obj.id
         return ShoppingCart.objects.filter(
             recipe=recipe, user=user).exists()
