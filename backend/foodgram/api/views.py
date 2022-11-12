@@ -27,7 +27,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     lookup_field = 'username'
     permission_classes = (permissions.IsAuthenticated, IsSuperuser | IsAdmin,)
-    
+
     @action(
         detail=False,
         permission_classes=(permissions.IsAuthenticated,),
