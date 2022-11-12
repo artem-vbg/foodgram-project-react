@@ -23,10 +23,10 @@ class UserSerializer(serializers.ModelSerializer):
             'is_subscribed'
         )
         model = CustomUser
-        #extra_kwargs = {
-            #'username': {'required': True},
-            #'email': {'required': True},
-        #}
+        extra_kwargs = {
+            'username': {'required': True},
+            'email': {'required': True},
+        }
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
