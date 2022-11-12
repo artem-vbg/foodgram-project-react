@@ -11,6 +11,7 @@ from .utils import DataSerializerMixin
 
 
 class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         fields = (
@@ -18,11 +19,21 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'username',
             'id',
-            'email',)
+            'email',
+            'is_subscribed'
+        )
         model = CustomUser
-        extra_kwargs = {
-            'username': {'required': True},
-            'email': {'required': True}}
+        #extra_kwargs = {
+            #'username': {'required': True},
+            #'email': {'required': True},
+        #}
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
+            return False
+        user = request.user
+        return Follow.objects.filter(author=obj, user=user).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -80,18 +91,22 @@ class ListRecipeSerializer(serializers.ModelSerializer):
                   )
 
     def get_is_favorited(self, obj):
-        user = self.context.get('user_id')
-        recipe = obj.id
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
         return Favorite.objects.filter(
-            user=user,
-            recipe=recipe
+            user=request.user,
+            recipe=obj,
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('user_id')
-        recipe = obj.id
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
         return ShoppingCart.objects.filter(
-            recipe=recipe, user=user).exists()
+            user=request.user,
+            recipe=obj,
+        ).exists()
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -282,14 +297,14 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         return data
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class FollowSerializer(UserSerializer):
     email = serializers.ReadOnlyField(source='author.email')
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
-    recipes = ListRecipeSerializer(
+    recipes = RecipeSerializer(
         source='author.recipes',
         many=True,
         data=Recipe.objects.all(),
@@ -298,7 +313,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = [
+        fields = (
             'email',
             'id',
             'username',
@@ -307,12 +322,10 @@ class FollowSerializer(serializers.ModelSerializer):
             'is_subscribed',
             'recipes',
             'recipes_count',
-        ]
+        )
 
-    def get_is_subscribed(self, obj):
-        author = obj.author
-        user = obj.user
-        return Follow.objects.filter(author=user, user=author).exists()
+    def get_is_subscribed(self, username):
+        return True
 
     def get_recipes_count(self, obj):
         author = obj.author

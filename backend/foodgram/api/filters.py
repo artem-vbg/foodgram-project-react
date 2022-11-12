@@ -1,11 +1,18 @@
 import django_filters
 from django_filters.rest_framework.filters import BooleanFilter
 from django_filters import FilterSet, filters, rest_framework
+
 from recipes.models import (Favorite, Ingredient, Recipe,
                             ShoppingCart, Tag)
+from users.models import CustomUser
 
 
 class RecipeFilterSet(rest_framework.FilterSet):
+
+    author = django_filters.ModelMultipleChoiceFilter(
+        field_name='author__username',
+        queryset=CustomUser.objects.all()
+    )
 
     tags = django_filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
@@ -25,7 +32,7 @@ class RecipeFilterSet(rest_framework.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ['tags', 'is_favorited']
+        fields = ['tags', 'is_favorited', 'author']
 
     def filter_is_favorited(self, queryset, name, tags):
         user = self.request.user

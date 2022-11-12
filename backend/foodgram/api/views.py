@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from recipes.models import (Ingredient, IngredientAmount, Favorite, Recipe,
                             ShoppingCart, Tag)
+from api.paginations import LimitPageNumberPagination
 from users.models import CustomUser, Follow
 
 from .filters import IngredientSearchFilter, RecipeFilterSet
@@ -26,7 +27,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     lookup_field = 'username'
     permission_classes = (permissions.IsAuthenticated, IsSuperuser | IsAdmin,)
-
+    
     @action(
         detail=False,
         permission_classes=(permissions.IsAuthenticated,),
@@ -49,11 +50,12 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthorOrAdmin,)
     queryset = Recipe.objects.all()
-    serializer_class = ListRecipeSerializer
+    serializer_class = RecipeSerializer
+    permission_classes = (IsAuthorOrAdmin,)
     filter_backends = (DjangoFilterBackend,)
     filter_class = RecipeFilterSet
+    pagination_class = LimitPageNumberPagination
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PUT', 'PATCH'):
@@ -105,8 +107,8 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class ShoppingCartViewSet(DataMixin, views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = TagSerializer
-    pagination_class = None
+    serializer_class = ShoppingCartSerializer
+    pagination_class = LimitPageNumberPagination
 
     def post(self, request, recipe_id):
         return self.add_to_universal_method(
@@ -138,9 +140,9 @@ class SubscribeView(views.APIView):
 
     def post(self, request, user_id):
         user = self.request.user
-        author = get_object_or_404(CustomUser, id=user_id)
+        author = get_object_or_404(CustomUser, pk=user_id)
         serializer = FollowCreateSerializer(
-            data={'user': user.id, 'author': user_id}
+            data={'user': user.id, 'author': user_id},
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(user=self.request.user)
@@ -154,7 +156,7 @@ class SubscribeView(views.APIView):
 
     def delete(self, request, user_id):
         user = request.user
-        author = get_object_or_404(CustomUser, id=user_id)
+        author = get_object_or_404(CustomUser, pk=user_id)
         follow = get_object_or_404(Follow, user=user, author=author)
         follow.delete()
         return Response(
