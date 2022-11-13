@@ -5,12 +5,12 @@ from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from djoser.views import UserViewSet
 
 from recipes.models import (Ingredient, IngredientAmount, Favorite, Recipe,
                             ShoppingCart, Tag)
 from api.paginations import LimitPageNumberPagination
 from users.models import CustomUser, Follow
-
 from .filters import IngredientSearchFilter, RecipeFilterSet
 from .permissions import IsAdmin, IsAuthorOrAdmin, IsSuperuser
 from .serializers import (FavoriteCreateSerializer, FavoriteSerializer,
@@ -20,6 +20,13 @@ from .serializers import (FavoriteCreateSerializer, FavoriteSerializer,
                           ShoppingCartSerializer, TagSerializer,
                           UserSerializer)
 from .utils import DataMixin, download_file_response
+
+
+class CreateUserView(UserViewSet):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return CustomUser.objects.all()
 
 
 class UsersViewSet(viewsets.ModelViewSet):

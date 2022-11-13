@@ -1,16 +1,16 @@
 from django.db.models import F
 from django.shortcuts import get_object_or_404
+from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag, TagRecipe)
 from users.models import CustomUser, Follow
-
 from .utils import DataSerializerMixin
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(UserCreateSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -26,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'username': {'required': True},
             'email': {'required': True},
+            'is_subscribed': {'required': False}
         }
 
     def get_is_subscribed(self, obj):
@@ -33,7 +34,10 @@ class UserSerializer(serializers.ModelSerializer):
         if request is None or request.user.is_anonymous:
             return False
         user = request.user
-        return Follow.objects.filter(author=obj, user=user).exists()
+        if Follow.objects.filter(author=obj, user=user).exists():
+            return True
+        else:
+            return False
 
 
 class TagSerializer(serializers.ModelSerializer):
