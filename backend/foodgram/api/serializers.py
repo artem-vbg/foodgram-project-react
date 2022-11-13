@@ -1,7 +1,7 @@
+from drf_extra_fields.fields import Base64ImageField
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer
-from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
