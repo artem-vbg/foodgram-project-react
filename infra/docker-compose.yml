@@ -11,9 +11,7 @@ services:
     restart: always
 
   backend:
-    build:
-      context: ../backend/foodgram 
-      dockerfile: Dockerfile
+    image: artemhub/foodgram:v2
     restart: always
     volumes:
       - static_value:/app/static/
