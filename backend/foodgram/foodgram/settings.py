@@ -137,12 +137,6 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
     },
-
-    'SERIALIZERS': {
-        'user_create': 'api.serializers.UserSerializer',
-        'user': 'api.serializers.UserSerializer',
-        'current_user': 'api.serializers.UserSerializer',
-    }
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
